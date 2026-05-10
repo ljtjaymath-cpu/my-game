@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Idle Mine: Cosmic Evolution</title>
+    <script src="https://sdk.crazygames.com/crazygames-sdk-v3.js"></script>
+    <style>
+        :root {
+            --gold: #ffd700; --accent: #00d2ff;
+            --p1: #3d2b16; --p2: #7b1d1d; --p3: #1a1a1a; --p4: #0f380f; --p5: #1e1e4a;
+        }
+
+        body { 
+            margin: 0; background: #000; color: white; 
+            font-family: '微軟正黑體', system-ui, sans-serif; overflow: hidden; 
+        }
+
+        /* 通用頂欄 */
+        .top-bar {
+            height: 65px; background: rgba(0,0,0,0.9); border-bottom: 2px solid var(--gold);
+            display: flex; justify-content: space-between; align-items: center; padding: 0 20px;
+            position: fixed; top: 0; width: 100%; z-index: 1000; box-sizing: border-box;
+        }
+        .money-text { font-size: 26px; color: var(--gold); font-weight: 900; }
+
+        /* 主中心 (Hub) */
+        #hub-view {
+            height: 100vh; padding: 85px 20px 20px; box-sizing: border-box;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px; overflow-y: auto; background: radial-gradient(circle, #222 0%, #000 100%);
+        }
+
+        .phase-card {
+            height: 220px; border-radius: 15px; position: relative; overflow: hidden;
+            cursor: pointer; border: 2px solid rgba(255,255,255,0.1);
+            display: flex; flex-direction: column; justify-content: flex-end; padding: 20px;
+            transition: 0.3s;
+        }
+        .phase-card:hover { transform: scale(1.02); border-color: var(--gold); }
+        .phase-card.locked { filter: grayscale(1) brightness(0.4); cursor: default; }
+        .phase-card h2 { margin: 0; font-size: 22px; text-shadow: 2px 2px 4px #000; }
+        .phase-card .desc { font-size: 13px; color: #ddd; margin-top: 5px; }
+        .unlock-btn {
+            background: var(--gold); color: #000; border: none; padding: 8px;
+            border-radius: 5px; font-weight: bold; margin-top: 10px; cursor: pointer;
+        }
+
+        /* 遊戲挖掘畫面 */
+        #game-view { display: none; height: 100vh; flex-direction: column; padding-top: 65px; box-sizing: border-box; }
+        #mine-scroller { flex: 1; overflow-y: auto; display: flex; position: relative; background: #111; }
+        
+        .shaft { width: 75px; background: rgba(0,0,0,0.6); position: relative; border-right: 2px solid #333; }
+        #elevator { 
+            width: 55px; height: 65px; background: #444; border: 2px solid var(--gold);
+            position: absolute; left: 10px; border-radius: 4px; z-index: 100;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        #el-load { font-size: 10px; color: var(--gold); font-weight: bold; }
+
+        .floor { height: 140px; border-bottom: 2px solid rgba(0,0,0,0.3); position: relative; flex: 1; }
+        .worker { position: absolute; font-size: 35px; bottom: 15px; transition: transform 0.1s; }
+        .gem-icon { position: absolute; right: 40px; top: 45px; font-size: 45px; opacity: 0.8; }
+        .floor-label { position: absolute; left: 10px; top: 10px; font-size: 11px; background: rgba(0,0,0,0.5); padding: 2px 6px; border-radius: 10px; }
+
+        /* 升級面板 */
+        .shop-panel {
+            height: 140px; background: #0a0a0a; display: grid; grid-template-columns: repeat(4, 1fr);
+            gap: 12px; padding: 15px; border-top: 2px solid #222;
+        }
+        .btn-up {
+            background: #222; border: 1px solid #444; color: white; border-radius: 8px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            cursor: pointer; transition: 0.2s;
+        }
+        .btn-up:hover { background: #333; }
+        .btn-up:active { transform: scale(0.95); }
+        .btn-up b { color: var(--gold); font-size: 14px; margin-bottom: 4px; }
+        .btn-up span { font-size: 12px; opacity: 0.8; }
+        .btn-up:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .back-home { background: #e74c3c; border: none; color: white; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="top-bar">
+    <button class="back-home" id="btn-back" style="display:none" onclick="goHub()">🏠 回到中心</button>
+    <div class="money-text">💰 $<span id="cash-val">0</span></div>
+    <button onclick="showAdReward()" style="background:#27ae60; border:none; color:white; padding:8px 15px; border-radius:4px; cursor:pointer; font-weight:bold;">📺 領獎勵</button>
+</div>
+
+<div id="hub-view"></div>
+
+<div id="game-view">
+    <div id="mine-scroller">
+        <div class="shaft"><div id="elevator"><span id="el-load">0</span>🛒</div></div>
+        <div id="floors-container" style="flex:1"></div>
+    </div>
+    <div class="shop-panel">
+        <button class="btn-up" onclick="buyFloor()"><b>⚒️ 開發新層</b><span id="cost-floor">--</span></button>
+        <button class="btn-up" onclick="buySpeed()"><b>⚡ 挖掘效率</b><span id="cost-speed">--</span></button>
+        <button class="btn-up" onclick="buyEl()"><b>🚀 電梯升級</b><span id="cost-el">--</span></button>
+        <button class="btn-up" style="border-color:var(--accent)" onclick="goHub()"><b>🌌 宇宙地圖</b><span>切換區域</span></button>
+    </div>
+</div>
+
+<script>
+    let sdk = null;
+    let state = {
+        cash: 500,
+        unlocked: [1],
+        activeId: null,
+        data: {
+            1: { floors: 1, elSpeed: 3, workSpeed: 3 },
+            2: { floors: 1, elSpeed: 4, workSpeed: 4 },
+            3: { floors: 1, elSpeed: 5, workSpeed: 5 },
+            4: { floors: 1, elSpeed: 6, workSpeed: 6 },
+            5: { floors: 1, elSpeed: 7, workSpeed: 7 }
+        }
+    };
+
+    const PHASES = {
+        1: { name: "Phase 1: 地表層", bg: "#3d2b16", gem: "🪨", val: 50, unlock: 0 },
+        2: { name: "Phase 2: 熔岩層", bg: "#7b1d1d", gem: "🔥", val: 400, unlock: 20000 },
+        3: { name: "Phase 3: 深核層", bg: "#1a1a1a", gem: "💎", val: 3000, unlock: 250000 },
+        4: { name: "Phase 4: 生化實驗室", bg: "#0f380f", gem: "🧪", val: 25000, unlock: 2000000 },
+        5: { name: "Phase 5: 虛空宇宙", bg: "#1e1e4a", gem: "🌌", val: 150000, unlock: 50000000 }
+    };
+
+    let elPos = 0, elCargo = 0, elDir = 1;
+    let floorStocks = []; // 存放各層目前的庫存量
+
+    window.onload = async () => {
+        if(window.CrazyGames) sdk = await window.CrazyGames.SDK.init();
+        loadProgress();
+        renderHub();
+        updateGlobalUI();
+        requestAnimationFrame(mainLoop);
+    };
+
+    function renderHub() {
+        const hub = document.getElementById('hub-view');
+        hub.innerHTML = '';
+        Object.keys(PHASES).forEach(id => {
+            const p = PHASES[id];
+            const isUnlocked = state.unlocked.includes(parseInt(id));
+            const card = document.createElement('div');
+            card.className = `phase-card ${isUnlocked ? '' : 'locked'}`;
+            card.style.background = `linear-gradient(to top, rgba(0,0,0,0.8), transparent), ${p.bg}`;
+            
+            let content = `<h2>${p.name}</h2><div class="desc">價值: $${p.val} / 每礦</div>`;
+            if(!isUnlocked) {
+                content += `<button class="unlock-btn" onclick="tryUnlock(${id}, event)">解鎖需求: $${p.unlock.toLocaleString()}</button>`;
+            } else {
+                card.onclick = () => enterPhase(parseInt(id));
+            }
+            card.innerHTML = content;
+            hub.appendChild(card);
+        });
+    }
+
+    function tryUnlock(id, e) {
+        e.stopPropagation();
+        const cost = PHASES[id].unlock;
+        if(state.cash >= cost) {
+            state.cash -= cost;
+            state.unlocked.push(id);
+            renderHub();
+            updateGlobalUI();
+            saveProgress();
+        } else {
+            alert("資金不足！");
+        }
+    }
+
+    function enterPhase(id) {
+        state.activeId = id;
+        document.getElementById('hub-view').style.display = 'none';
+        document.getElementById('game-view').style.display = 'flex';
+        document.getElementById('btn-back').style.display = 'block';
+        
+        // 重置區域變數
+        elPos = 0; elCargo = 0; elDir = 1;
+        floorStocks = new Array(state.data[id].floors).fill(0);
+        
+        renderFloors();
+        updateGlobalUI();
+    }
+
+    function goHub() {
+        state.activeId = null;
+        document.getElementById('hub-view').style.display = 'grid';
+        document.getElementById('game-view').style.display = 'none';
+        document.getElementById('btn-back').style.display = 'none';
+        renderHub();
+        if(sdk) sdk.ad.requestAd('midroll');
+    }
+
+    function renderFloors() {
+        const container = document.getElementById('floors-container');
+        container.innerHTML = '';
+        const pd = state.data[state.activeId];
+        const conf = PHASES[state.activeId];
+
+        for(let i=0; i<pd.floors; i++) {
+            const f = document.createElement('div');
+            f.className = 'floor';
+            f.style.background = conf.bg;
+            f.innerHTML = `
+                <div class="floor-label">B${i+1}F - 待採收: $<span id="s-val-${i}">0</span></div>
+                <div class="gem-icon">${conf.gem}</div>
+                <div class="worker" id="w-${i}" style="left:20px">👷</div>
+            `;
+            container.appendChild(f);
+            // 給礦工一些自定義屬性
+            f.workerX = 20; f.workerDir = 1; f.isDigging = false;
+        }
+    }
+
+    function mainLoop() {
+        if(state.activeId) {
+            const pd = state.data[state.activeId];
+            const conf = PHASES[state.activeId];
+            const floors = document.querySelectorAll('.floor');
+
+            // 1. 礦工邏輯
+            floors.forEach((f, i) => {
+                if(f.isDigging) return;
+                f.workerX += pd.workSpeed * f.workerDir;
+                const w = document.getElementById(`w-${i}`);
+                w.style.left = f.workerX + 'px';
+                w.style.transform = f.workerDir > 0 ? 'scaleX(1)' : 'scaleX(-1)';
+
+                if(f.workerX > 260) {
+                    f.isDigging = true;
+                    setTimeout(() => { 
+                        f.isDigging = false; f.workerDir = -1; 
+                    }, 800);
+                }
+                if(f.workerX < 20) {
+                    f.workerDir = 1;
+                    floorStocks[i] += conf.val;
+                }
+                document.getElementById(`s-val-${i}`).innerText = Math.floor(floorStocks[i]);
+            });
+
+            // 2. 電梯邏輯 (核心修正：路徑判定)
+            const oldPos = elPos;
+            const maxPos = (pd.floors - 1) * 140;
+            elPos += pd.elSpeed * elDir;
+
+            if(elPos >= maxPos) { elPos = maxPos; elDir = -1; }
+            if(elPos <= 0) { 
+                if(elCargo > 0) { state.cash += elCargo; elCargo = 0; updateGlobalUI(); saveProgress(); }
+                elPos = 0; elDir = 1; 
+            }
+
+            // 檢查電梯在 [oldPos, elPos] 區間內是否經過了任何樓層
+            for(let i=0; i<pd.floors; i++) {
+                const targetY = i * 140;
+                const min = Math.min(oldPos, elPos);
+                const max = Math.max(oldPos, elPos);
+                if(targetY >= min && targetY <= max) {
+                    elCargo += floorStocks[i];
+                    floorStocks[i] = 0;
+                }
+            }
+
+            document.getElementById('elevator').style.top = elPos + 'px';
+            document.getElementById('el-load').innerText = Math.floor(elCargo);
+        }
+        requestAnimationFrame(mainLoop);
+    }
+
+    // 升級邏輯
+    function buyFloor() {
+        const pd = state.data[state.activeId];
+        const cost = pd.floors * 2000 * state.activeId;
+        if(state.cash >= cost) {
+            state.cash -= cost;
+            pd.floors++;
+            floorStocks.push(0);
+            renderFloors();
+            updateGlobalUI();
+        }
+    }
+
+    function buySpeed() {
+        const pd = state.data[state.activeId];
+        const cost = pd.workSpeed * 800 * state.activeId;
+        if(state.cash >= cost) {
+            state.cash -= cost;
+            pd.workSpeed += 0.8;
+            updateGlobalUI();
+        }
+    }
+
+    function buyEl() {
+        const pd = state.data[state.activeId];
+        const cost = pd.elSpeed * 1200 * state.activeId;
+        if(state.cash >= cost) {
+            state.cash -= cost;
+            pd.elSpeed += 1.5;
+            updateGlobalUI();
+        }
+    }
+
+    function updateGlobalUI() {
+        document.getElementById('cash-val').innerText = Math.floor(state.cash).toLocaleString();
+        if(state.activeId) {
+            const pd = state.data[state.activeId];
+            const m = state.activeId;
+            document.getElementById('cost-floor').innerText = `$${(pd.floors * 2000 * m).toLocaleString()}`;
+            document.getElementById('cost-speed').innerText = `$${Math.floor(pd.workSpeed * 800 * m).toLocaleString()}`;
+            document.getElementById('cost-el').innerText = `$${Math.floor(pd.elSpeed * 1200 * m).toLocaleString()}`;
+        }
+    }
+
+    function showAdReward() {
+        if(sdk) {
+            sdk.ad.requestAd('rewarded', {
+                adFinished: () => { state.cash += 10000; updateGlobalUI(); }
+            });
+        } else {
+            if(confirm("測試：觀看廣告領取 $10,000?")) { state.cash += 10000; updateGlobalUI(); }
+        }
+    }
+
+    function saveProgress() { localStorage.setItem('idle_cosmic_final', JSON.stringify(state)); }
+    function loadProgress() {
+        const saved = localStorage.getItem('idle_cosmic_final');
+        if(saved) state = JSON.parse(saved);
+    }
+</script>
+</body>
+</html>
