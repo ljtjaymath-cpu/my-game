@@ -8,7 +8,7 @@
     <style>
         :root {
             --gold: #FFD700; --accent: #00D2FF; --bg: #0A0A0B;
-            --panel: #1A1A1D; --btn: #2C3E50;
+            --panel: #1A1A1D; --btn: #2C3E50; --danger: #e74c3c;
         }
 
         body { 
@@ -18,84 +18,101 @@
         }
 
         .header {
-            height: 80px; background: rgba(0,0,0,0.9); border-bottom: 3px solid var(--gold);
+            height: 80px; background: rgba(0,0,0,0.95); border-bottom: 3px solid var(--gold);
             display: flex; justify-content: space-between; align-items: center; padding: 0 25px;
             position: fixed; top: 0; width: 100%; z-index: 1000; box-sizing: border-box;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+            box-shadow: 0 5px 25px rgba(0,0,0,0.7);
         }
 
-        .cash-display { font-family: 'Bungee', cursive; font-size: 28px; color: var(--gold); text-shadow: 0 0 10px rgba(255,215,0,0.5); }
-        .mult-tag { font-size: 14px; color: var(--accent); background: rgba(0,210,255,0.1); padding: 4px 10px; border-radius: 20px; margin-left: 10px; }
+        .cash-display { font-family: 'Bungee', cursive; font-size: 28px; color: var(--gold); text-shadow: 0 0 10px rgba(255,215,0,0.6); }
+        .mult-tag { font-size: 14px; color: var(--accent); background: rgba(0,210,255,0.1); padding: 4px 12px; border-radius: 20px; margin-left: 10px; border: 1px solid rgba(0,210,255,0.3); }
 
         #hub-view {
-            height: 100vh; padding: 100px 20px 40px; box-sizing: border-box;
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            height: 100vh; padding: 110px 20px 40px; box-sizing: border-box;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
             gap: 25px; overflow-y: auto; background: radial-gradient(circle at center, #1b2735 0%, #090a0f 100%);
         }
 
         .phase-card {
-            height: 240px; border-radius: 20px; border: 2px solid rgba(255,255,255,0.1);
+            height: 250px; border-radius: 25px; border: 2px solid rgba(255,255,255,0.1);
             display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
             padding: 30px; cursor: pointer; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             position: relative; overflow: hidden; background-size: cover; background-position: center;
         }
 
-        .phase-card:hover { transform: translateY(-10px); border-color: var(--gold); box-shadow: 0 10px 30px rgba(255,215,0,0.2); }
-        .phase-card.locked { filter: grayscale(1) brightness(0.4); cursor: not-allowed; }
-        .phase-card h2 { font-family: 'Bungee', cursive; font-size: 20px; margin: 0; text-shadow: 2px 2px 5px black; }
+        .phase-card:hover { transform: translateY(-10px); border-color: var(--gold); box-shadow: 0 15px 35px rgba(255,215,0,0.3); }
+        .phase-card.locked { filter: grayscale(1) brightness(0.3); cursor: not-allowed; }
+        .phase-card h2 { font-family: 'Bungee', cursive; font-size: 22px; margin: 0; text-shadow: 2px 2px 5px black; }
 
         #game-view { display: none; height: 100vh; padding-top: 80px; box-sizing: border-box; flex-direction: column; }
-        #mine-container { flex: 1; display: flex; overflow-y: auto; background: #111; position: relative; }
-        .shaft-area { width: 100px; background: #000; border-right: 4px solid #333; position: relative; }
+        #mine-container { flex: 1; display: flex; overflow-y: auto; background: #0b0b0d; position: relative; }
+        .shaft-area { width: 100px; background: rgba(0,0,0,0.8); border-right: 4px solid #333; position: relative; }
         
         #elevator { 
             width: 80px; height: 90px; background: url('https://img.icons8.com/clouds/100/elevator.png') no-repeat center;
             background-size: contain; position: absolute; left: 10px; z-index: 100;
             display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
         }
-        .el-cargo { background: var(--gold); color: black; font-weight: 900; font-size: 12px; padding: 2px 6px; border-radius: 5px; margin-top: -10px; }
+        .el-cargo { background: var(--gold); color: black; font-weight: 900; font-size: 12px; padding: 2px 8px; border-radius: 5px; margin-top: -10px; }
 
         .floor { height: 180px; border-bottom: 2px solid #222; position: relative; flex: 1; border-left: 2px solid #444; }
-        .gem-sprite { width: 70px; height: 70px; position: absolute; right: 80px; top: 50px; animation: float 2s infinite ease-in-out; }
-        .worker-sprite { width: 60px; position: absolute; bottom: 20px; transition: 0.2s; }
+        .gem-sprite { width: 75px; height: 75px; position: absolute; right: 80px; top: 50px; animation: float 2.5s infinite ease-in-out; }
+        .worker-sprite { width: 65px; position: absolute; bottom: 20px; transition: 0.2s; }
 
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
 
         .shop-bar {
-            height: 160px; background: var(--panel); border-top: 4px solid #444;
-            display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; padding: 15px;
+            height: 150px; background: var(--panel); border-top: 4px solid #333;
+            display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; padding: 15px;
         }
 
         .upgrade-btn {
-            background: var(--btn); border: none; border-radius: 12px; color: white;
+            background: var(--btn); border: none; border-radius: 15px; color: white;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            cursor: pointer; transition: 0.2s; border-bottom: 4px solid #1a252f;
+            cursor: pointer; transition: 0.2s; border-bottom: 5px solid #1a252f;
         }
-        .upgrade-btn:active { transform: translateY(2px); border-bottom: 2px solid #1a252f; }
-        .upgrade-btn b { color: var(--gold); font-size: 14px; margin-bottom: 3px; }
+        .upgrade-btn:active { transform: translateY(3px); border-bottom: 2px solid #1a252f; }
+        .upgrade-btn b { color: var(--gold); font-size: 15px; margin-bottom: 4px; }
         .upgrade-btn span { font-size: 11px; opacity: 0.9; }
 
-        /* 廣告按鈕專用特效 */
-        #ad-btn { animation: pulse-gold 2s infinite; }
-        @keyframes pulse-gold {
-            0% { box-shadow: 0 0 0 0 rgba(241, 196, 15, 0.7); }
-            70% { box-shadow: 0 0 0 15px rgba(241, 196, 15, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(241, 196, 15, 0); }
+        /* 新手指引 */
+        #tutorial-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 10000;
+            display: none; justify-content: center; align-items: center;
         }
-        #ad-btn:disabled { background: #7f8c8d !important; border-bottom-color: #95a5a6 !important; cursor: not-allowed; animation: none; }
+        #tutorial-box {
+            background: #1a1a1d; border: 3px solid var(--gold); border-radius: 20px;
+            width: 350px; padding: 30px; text-align: center; box-shadow: 0 0 50px rgba(0,0,0,1);
+        }
+        #tutorial-box button { background: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 15px; }
 
-        .pop-text { position: absolute; color: var(--gold); font-weight: 900; pointer-events: none; animation: moveUp 1s forwards; z-index: 9999; }
-        @keyframes moveUp { from { transform: translateY(0); opacity: 1; } to { transform: translateY(-50px); opacity: 0; } }
+        .tutorial-highlight { animation: pulse-guide 1s infinite !important; z-index: 10001 !important; }
+        @keyframes pulse-guide { 50% { box-shadow: 0 0 20px 10px #e67e22; transform: scale(1.05); } }
+
+        #ad-btn { animation: pulse-gold 2.5s infinite; }
+        @keyframes pulse-gold { 0% { box-shadow: 0 0 0 0 rgba(241, 196, 15, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(241, 196, 15, 0); } 100% { box-shadow: 0 0 0 0 rgba(241, 196, 15, 0); } }
+        
+        .pop-text { position: absolute; color: var(--gold); font-weight: 900; pointer-events: none; animation: moveUp 1.2s forwards; z-index: 9999; }
+        @keyframes moveUp { from { transform: translateY(0); opacity: 1; } to { transform: translateY(-60px); opacity: 0; } }
     </style>
 </head>
 <body>
 
+<div id="tutorial-overlay">
+    <div id="tutorial-box">
+        <h3 id="t-title">宇宙實習生！</h3>
+        <p id="t-text">歡迎來到這顆星球。</p>
+        <button id="t-btn" onclick="nextTutorialStep()">知道了</button>
+    </div>
+</div>
+
 <div class="header">
     <div style="display:flex; align-items:center;">
-        <button onclick="goHub()" id="back-btn" style="display:none; background:#e74c3c; border:none; color:white; padding:10px 15px; border-radius:8px; margin-right:15px; cursor:pointer; font-weight:bold;">🏠 返回</button>
+        <button onclick="goHub()" id="back-btn" style="display:none; background:var(--danger); border:none; color:white; padding:10px 15px; border-radius:8px; margin-right:15px; cursor:pointer;">🏠 返回</button>
         <div class="cash-display">$ <span id="cash-val">0</span> <span class="mult-tag" id="mult-val">x1.0</span></div>
     </div>
-    <button onclick="prestige()" style="background:#8e44ad; border:none; color:white; padding:12px 20px; border-radius:10px; font-weight:bold; cursor:pointer; box-shadow: 0 4px #703688;">🧬 重啟宇宙</button>
+    <button onclick="prestige()" style="background:#8e44ad; border:none; color:white; padding:12px 20px; border-radius:10px; cursor:pointer;">🧬 重啟宇宙</button>
 </div>
 
 <div id="hub-view"></div>
@@ -108,13 +125,13 @@
         <div id="floors-list" style="flex:1"></div>
     </div>
     <div class="shop-bar">
-        <button class="upgrade-btn" onclick="buyFloor()"><b>⚒️ 擴建礦層</b><span id="c-floor">--</span></button>
+        <button class="upgrade-btn" id="guide-floor" onclick="wrappedBuyFloor()"><b>⚒️ 擴建礦層</b><span id="c-floor">--</span></button>
         <button class="upgrade-btn" onclick="buyWorker()"><b>⚡ 挖掘效率</b><span id="c-work">--</span></button>
         <button class="upgrade-btn" onclick="buyEl()"><b>🚀 電梯載重</b><span id="c-el">--</span></button>
-        <button class="upgrade-btn" onclick="buyManager()" id="manager-btn" style="background:#27ae60;"><b>👨‍💼 自動經理</b><span id="c-manager">--</span></button>
-        <button class="upgrade-btn" id="ad-btn" onclick="showRewardAd()" style="background: linear-gradient(45deg, #f1c40f, #f39c12); border-bottom: 5px solid #d35400;">
-            <b style="color: #000;">📺 贊助獎勵</b>
-            <span id="ad-status" style="color: #000; font-weight: bold;">領取 $1M+</span>
+        <button class="upgrade-btn" id="guide-manager" onclick="wrappedBuyManager()"><b>👨‍💼 自動經理</b><span id="c-manager">--</span></button>
+        <button class="upgrade-btn" id="ad-btn" onclick="wrappedShowRewardAd()" style="background: linear-gradient(45deg, #f1c40f, #f39c12);">
+            <b>📺 贊助獎勵</b>
+            <span id="ad-status">領取 $1M+</span>
         </button>
     </div>
 </div>
@@ -133,66 +150,34 @@
         10: { name: "多重核心", color: "#ffffff", val: 15000000000, cost: 500000000000000, gem: "https://img.icons8.com/emoji/96/rainbow.png" }
     };
 
-    let state = { cash: 50, unlocked: [1], activeId: null, multiplier: 1.0, data: {} };
+    let state = { cash: 500, unlocked: [1], activeId: null, multiplier: 1.0, data: {}, tutorialProgress: 0 };
     let adCooldown = false;
 
-    // 初始化與存檔讀取
+    const tutorialSteps = [
+        { title: "缺錢嗎？", text: "點擊下方的【📺 贊助獎勵】領取一百萬！", element: "ad-btn" },
+        { title: "擴建礦坑", text: "點擊【⚒️ 擴建礦層】增加產量。", element: "guide-floor" },
+        { title: "自動化", text: "點擊【👨‍💼 自動經理】讓礦坑自動運作！", element: "guide-manager" },
+        { title: "完成！", text: "重複這些步驟，征服多重宇宙吧！", element: null }
+    ];
+
     function init() {
         Object.keys(PHASES).forEach(id => {
             state.data[id] = { floors: 1, elSpeed: 6, workSpeed: 5, elPos: 0, elCargo: 0, elDir: 1, stocks: [0], manager: false };
         });
-        const saved = localStorage.getItem('cosmicTycoonSave');
-        if(saved) {
-            const parsed = JSON.parse(saved);
-            state = {...state, ...parsed};
-        }
+        const saved = localStorage.getItem('cosmicTycoonSaveV2');
+        if(saved) state = JSON.parse(saved);
         renderHub();
         update();
+        if(state.tutorialProgress < 3) checkTutorial();
     }
 
-    function save() {
-        localStorage.setItem('cosmicTycoonSave', JSON.stringify(state));
-    }
-
-    function showRewardAd() {
-        if (adCooldown) return;
-        const btn = document.getElementById('ad-btn');
-        const status = document.getElementById('ad-status');
-        adCooldown = true;
-        btn.disabled = true;
-        status.innerText = "觀看中 (5s)...";
-
-        setTimeout(() => {
-            const rewardAmount = (state.activeId || 1) * 1000000;
-            state.cash += rewardAmount;
-            createPopText(window.innerWidth / 2, window.innerHeight / 2, `+$${rewardAmount.toLocaleString()}`);
-            alert(`🎉 贊助商獎勵 $${rewardAmount.toLocaleString()} 已入帳！`);
-            startAdCooldown(60);
-            save();
-        }, 5000);
-    }
-
-    function startAdCooldown(seconds) {
-        const status = document.getElementById('ad-status');
-        let timeLeft = seconds;
-        const timer = setInterval(() => {
-            timeLeft--;
-            status.innerText = `冷卻 (${timeLeft}s)`;
-            if (timeLeft <= 0) {
-                clearInterval(timer);
-                adCooldown = false;
-                document.getElementById('ad-btn').disabled = false;
-                status.innerText = "領取 $1M+";
-            }
-        }, 1000);
-    }
+    function save() { localStorage.setItem('cosmicTycoonSaveV2', JSON.stringify(state)); }
 
     function update() {
         state.unlocked.forEach(id => {
             const p = state.data[id];
             const isVisible = (state.activeId === id);
             const m = (p.manager ? 2 : 1) * state.multiplier;
-            
             for(let i=0; i<p.floors; i++) {
                 p.stocks[i] += (p.workSpeed * PHASES[id].val * m) / 600;
                 if(isVisible) {
@@ -200,7 +185,6 @@
                     if(el) el.innerText = Math.floor(p.stocks[i]).toLocaleString();
                 }
             }
-
             p.elPos += p.elSpeed * p.elDir;
             const maxY = (p.floors - 1) * 180;
             if(p.elPos >= maxY) { p.elPos = maxY; p.elDir = -1; }
@@ -208,40 +192,29 @@
                 if(p.elCargo > 0) { state.cash += p.elCargo; p.elCargo = 0; save(); }
                 p.elPos = 0; p.elDir = 1;
             }
-
             for(let i=0; i<p.floors; i++) {
                 if(Math.abs(p.elPos - i*180) < p.elSpeed) { p.elCargo += p.stocks[i]; p.stocks[i] = 0; }
             }
-
             if(isVisible) {
                 document.getElementById('elevator').style.top = p.elPos + 'px';
                 document.getElementById('el-load').innerText = Math.floor(p.elCargo).toLocaleString();
             }
         });
-
         document.getElementById('cash-val').innerText = Math.floor(state.cash).toLocaleString();
         requestAnimationFrame(update);
     }
 
     function renderHub() {
-        const hub = document.getElementById('hub-view');
-        hub.innerHTML = '';
+        const hub = document.getElementById('hub-view'); hub.innerHTML = '';
         Object.keys(PHASES).forEach(id => {
             const unlocked = state.unlocked.includes(parseInt(id));
             const card = document.createElement('div');
             card.className = `phase-card ${unlocked ? '' : 'locked'}`;
             card.style.backgroundColor = PHASES[id].color;
             card.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('${PHASES[id].gem}')`;
-            card.style.backgroundSize = "60px";
-            card.style.backgroundRepeat = "no-repeat";
-            card.style.backgroundPosition = "center 40%";
             card.innerHTML = `<h2>${PHASES[id].name}</h2>`;
-            if(!unlocked) {
-                card.innerHTML += `<button onclick="unlock(${id}, event)" style="margin-top:10px; background:var(--gold); border:none; padding:8px; border-radius:5px; font-weight:bold; cursor:pointer;">解鎖 $${PHASES[id].cost.toLocaleString()}</button>`;
-            } else {
-                card.innerHTML += `<div style="color:var(--accent); font-size:12px; margin-top:5px;">● 已解鎖</div>`;
-                card.onclick = () => enterPhase(parseInt(id));
-            }
+            if(!unlocked) card.innerHTML += `<button onclick="unlock(${id}, event)" style="background:var(--gold); border:none; padding:8px; border-radius:5px; cursor:pointer;">解鎖 $${PHASES[id].cost.toLocaleString()}</button>`;
+            else card.onclick = () => enterPhase(parseInt(id));
             hub.appendChild(card);
         });
     }
@@ -251,93 +224,103 @@
         document.getElementById('hub-view').style.display = 'none';
         document.getElementById('game-view').style.display = 'flex';
         document.getElementById('back-btn').style.display = 'block';
-        const list = document.getElementById('floors-list');
-        list.innerHTML = '';
+        const list = document.getElementById('floors-list'); list.innerHTML = '';
         for(let i=0; i<state.data[id].floors; i++) {
-            const f = document.createElement('div');
-            f.className = 'floor';
+            const f = document.createElement('div'); f.className = 'floor';
             f.style.background = `linear-gradient(90deg, ${PHASES[id].color}, #111)`;
-            f.innerHTML = `<div style="padding:15px; font-weight:bold;">B${i+1}F - <span id="s-${i}" style="color:var(--gold)">0</span></div>
-                           <img src="${PHASES[id].gem}" class="gem-sprite">
-                           <img src="https://img.icons8.com/color/96/worker-male.png" class="worker-sprite" style="left:40%">`;
+            f.innerHTML = `<div style="padding:15px; font-weight:bold;">B${i+1}F - <span id="s-${i}">0</span></div><img src="${PHASES[id].gem}" class="gem-sprite"><img src="https://img.icons8.com/color/96/worker-male.png" class="worker-sprite" style="left:40%">`;
             list.appendChild(f);
         }
         updateShop();
-    }
-
-    function unlock(id, e) {
-        e.stopPropagation();
-        if(state.cash >= PHASES[id].cost) {
-            state.cash -= PHASES[id].cost;
-            state.unlocked.push(id);
-            save();
-            renderHub();
-        } else { alert("資金不足！"); }
+        checkTutorial();
     }
 
     function buyFloor() {
-        const p = state.data[state.activeId];
-        const cost = p.floors * 15000 * state.activeId;
-        if(state.cash >= cost) { state.cash -= cost; p.floors++; p.stocks.push(0); save(); enterPhase(state.activeId); }
+        const p = state.data[state.activeId]; const cost = p.floors * 15000 * state.activeId;
+        if(state.cash >= cost) { state.cash -= cost; p.floors++; p.stocks.push(0); save(); enterPhase(state.activeId); return true; }
+        return false;
     }
 
     function buyWorker() {
-        const p = state.data[state.activeId];
-        const cost = p.workSpeed * 5000 * state.activeId;
+        const p = state.data[state.activeId]; const cost = p.workSpeed * 5000 * state.activeId;
         if(state.cash >= cost) { state.cash -= cost; p.workSpeed += 5; save(); updateShop(); }
     }
 
     function buyEl() {
-        const p = state.data[state.activeId];
-        const cost = p.elSpeed * 8000 * state.activeId;
+        const p = state.data[state.activeId]; const cost = p.elSpeed * 8000 * state.activeId;
         if(state.cash >= cost) { state.cash -= cost; p.elSpeed += 4; save(); updateShop(); }
     }
 
     function buyManager() {
-        const p = state.data[state.activeId];
-        const cost = 100000 * state.activeId;
-        if(!p.manager && state.cash >= cost) { state.cash -= cost; p.manager = true; save(); updateShop(); }
+        const p = state.data[state.activeId]; const cost = 100000 * state.activeId;
+        if(!p.manager && state.cash >= cost) { state.cash -= cost; p.manager = true; save(); updateShop(); return true; }
+        return false;
     }
 
     function updateShop() {
-        const p = state.data[state.activeId];
-        const m = state.activeId;
+        const p = state.data[state.activeId]; const m = state.activeId;
         document.getElementById('c-floor').innerText = `$${(p.floors * 15000 * m).toLocaleString()}`;
         document.getElementById('c-work').innerText = `$${(p.workSpeed * 5000 * m).toLocaleString()}`;
         document.getElementById('c-el').innerText = `$${(p.elSpeed * 8000 * m).toLocaleString()}`;
         document.getElementById('c-manager').innerText = p.manager ? "已就職" : `$${(100000 * m).toLocaleString()}`;
     }
 
+    function unlock(id, e) {
+        e.stopPropagation();
+        if(state.cash >= PHASES[id].cost) { state.cash -= PHASES[id].cost; state.unlocked.push(id); save(); renderHub(); }
+        else alert("資金不足！");
+    }
+
+    function showRewardAd() {
+        if (adCooldown) return;
+        adCooldown = true; document.getElementById('ad-btn').disabled = true;
+        document.getElementById('ad-status').innerText = "觀看中...";
+        setTimeout(() => {
+            const reward = (state.activeId || 1) * 1000000;
+            state.cash += reward; createPopText(window.innerWidth/2, window.innerHeight/2, `+$${reward.toLocaleString()}`);
+            adCooldown = false; document.getElementById('ad-btn').disabled = false;
+            document.getElementById('ad-status').innerText = "領取 $1M+"; save();
+        }, 5000);
+    }
+
     function prestige() {
-        if(state.cash < 10000000) return alert("需要 $10,000,000 才能轉生！");
-        if(confirm("確定要重啟宇宙嗎？產量將永久 x2！")) {
-            state.multiplier *= 2;
-            state.cash = 500;
-            state.unlocked = [1];
-            Object.keys(PHASES).forEach(id => {
-                state.data[id] = { floors: 1, elSpeed: 6, workSpeed: 5, elPos: 0, elCargo: 0, elDir: 1, stocks: [0], manager: false };
-            });
-            document.getElementById('mult-val').innerText = `x${state.multiplier.toFixed(1)}`;
-            save();
-            goHub();
+        if(state.cash < 10000000) return alert("需 $10M 轉生！");
+        if(confirm("確定重啟？獲得產量 x2！")) {
+            state.multiplier *= 2; state.cash = 500; state.unlocked = [1];
+            Object.keys(PHASES).forEach(id => state.data[id] = { floors: 1, elSpeed: 6, workSpeed: 5, elPos: 0, elCargo: 0, elDir: 1, stocks: [0], manager: false });
+            save(); location.reload();
         }
     }
 
-    function goHub() { 
-        state.activeId = null; 
-        document.getElementById('hub-view').style.display = 'grid'; 
-        document.getElementById('game-view').style.display = 'none'; 
-        document.getElementById('back-btn').style.display = 'none'; 
-        renderHub(); 
-    }
+    function goHub() { state.activeId = null; document.getElementById('hub-view').style.display = 'grid'; document.getElementById('game-view').style.display = 'none'; document.getElementById('back-btn').style.display = 'none'; renderHub(); }
 
     function createPopText(x, y, txt) {
-        const t = document.createElement('div');
-        t.className = 'pop-text'; t.innerText = txt;
-        t.style.left = x + 'px'; t.style.top = y + 'px';
-        document.body.appendChild(t);
-        setTimeout(() => t.remove(), 1000);
+        const t = document.createElement('div'); t.className = 'pop-text'; t.innerText = txt;
+        t.style.left = x + 'px'; t.style.top = y + 'px'; document.body.appendChild(t);
+        setTimeout(() => t.remove(), 1200);
     }
+
+    // 指引邏輯連動
+    function checkTutorial() {
+        if(state.tutorialProgress >= tutorialSteps.length || !state.activeId) return;
+        const p = tutorialSteps[state.tutorialProgress];
+        document.getElementById('t-title').innerText = p.title;
+        document.getElementById('t-text').innerHTML = p.text;
+        document.getElementById('tutorial-overlay').style.display = 'flex';
+        document.getElementById('t-btn').style.display = p.element ? 'none' : 'block';
+        if(p.element) document.getElementById(p.element).classList.add('tutorial-highlight');
+    }
+
+    function nextTutorialStep() {
+        const p = tutorialSteps[state.tutorialProgress];
+        if(p && p.element) document.getElementById(p.element).classList.remove('tutorial-highlight');
+        state.tutorialProgress++; document.getElementById('tutorial-overlay').style.display = 'none';
+        save();
+    }
+
+    function wrappedShowRewardAd() { if(state.tutorialProgress === 0) nextTutorialStep(); showRewardAd(); }
+    function wrappedBuyFloor() { if(state.tutorialProgress === 1) { if(buyFloor()) nextTutorialStep(); else alert("先領贊助獎勵才有錢！"); } else buyFloor(); }
+    function wrappedBuyManager() { if(state.tutorialProgress === 2) { if(buyManager()) { nextTutorialStep(); checkTutorial(); } else alert("錢不夠！"); } else buyManager(); }
 
     init();
 </script>
